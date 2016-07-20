@@ -129,9 +129,6 @@ int32_t op_Page_Prog(uint32_t spiBase, uint32_t address, uint32_t* spiData, uint
 	// write enable
 	op_WREN(spiBase);
 
-	uint32_t read[2];
-	op_RDCR(spiBase, &read[0]);
-
 	// todo: actually handle errors
 	spi_init(spiBase, csMode);
 	spi_start(spiBase, csMode);
