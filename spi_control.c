@@ -33,13 +33,14 @@ int32_t spi_init(uint32_t spiBase, int32_t csMode)
         // Allows manual chip select control
         GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, GPIO_PIN_3);
         GPIODirModeSet(GPIO_PORTA_BASE, GPIO_PIN_3, GPIO_DIR_MODE_OUT);
-        GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_3, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD);
+        GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_3, GPIO_STRENGTH_10MA, GPIO_PIN_TYPE_STD_WPU);
         break;
     case auto_cs:
         // Enable pin PA3 for SSI0 SSI0FSS
         // Alternate config, if manual chip select control is not needed
         GPIOPinConfigure(GPIO_PA3_SSI0FSS);
         GPIOPinTypeSSI(GPIO_PORTA_BASE, GPIO_PIN_3);
+        GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_3, GPIO_STRENGTH_10MA, GPIO_PIN_TYPE_STD_WPU);
     	break;
     default:
     	return errCSModeNotSupp;
@@ -48,14 +49,17 @@ int32_t spi_init(uint32_t spiBase, int32_t csMode)
     // Enable pin PA5 for SSI0 SSI0TX
     GPIOPinConfigure(GPIO_PA5_SSI0TX);
     GPIOPinTypeSSI(GPIO_PORTA_BASE, GPIO_PIN_5);
+    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_5, GPIO_STRENGTH_10MA, GPIO_PIN_TYPE_STD_WPU);
 
     // Enable pin PA4 for SSI0 SSI0RX
     GPIOPinConfigure(GPIO_PA4_SSI0RX);
     GPIOPinTypeSSI(GPIO_PORTA_BASE, GPIO_PIN_4);
+    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_STRENGTH_10MA, GPIO_PIN_TYPE_STD_WPU);
 
     // Enable pin PA2 for SSI0 SSI0CLK
     GPIOPinConfigure(GPIO_PA2_SSI0CLK);
     GPIOPinTypeSSI(GPIO_PORTA_BASE, GPIO_PIN_2);
+    GPIOPadConfigSet(GPIO_PORTA_BASE, GPIO_PIN_2, GPIO_STRENGTH_10MA, GPIO_PIN_TYPE_STD_WPU);
 
     // Configure and enable the SSI port for SPI master mode.  Use SSI0,
     // system clock supply, idle clock level low and active low clock in
@@ -156,10 +160,12 @@ int32_t spi_write(uint32_t spiBase, uint32_t* spiData, uint32_t spiCount)
 	}
 
 	uint32_t i = 0;
+	uint32_t tempData = 0;
 
 	for(i = 0; i < spiCount; i++)
 	{
-		SSIDataPut(spiBase, 0xFF & spiData[i]);
+		tempData = 0xFF & spiData[i];
+		SSIDataPut(spiBase, tempData);
 	}
 
 	return 0;

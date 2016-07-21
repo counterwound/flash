@@ -5,11 +5,11 @@
 
 int32_t op_BusyWait(uint32_t spiBase)
 {
-	uint32_t statusReg = 0;
+	uint32_t statusReg[2];
 
 	do {
-		op_RDSR(spiBase, &statusReg);
-	} while(statusReg & 0x01);
+		op_RDSR(spiBase, &statusReg[0]);
+	} while(statusReg[1] & 0x01);
 
 	return 0;
 }
