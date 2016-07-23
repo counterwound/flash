@@ -46,16 +46,27 @@ int main(void)
 	// test chip erase
 	op_Chip_Erase(SSI0_BASE);
 
+	// global write protect disable
+	op_Global_Blk_Unlock(SSI0_BASE);
+
 	// test page program
 	uint32_t writeData[4] = {0xAA, 0xBB, 0xCC, 0xDD};
-	op_Page_Prog(SSI0_BASE, 0x2000, &writeData[0], 4);
+	op_Page_Prog(SSI0_BASE, 0x2000, writeData, 4);
 
 	// reset chip
-	//op_Reset(SSI0_BASE);
+	op_Reset(SSI0_BASE);
 
 	// test read
 	uint32_t readData[4] = {0xEE, 0xFF, 0x11, 0x22};
-	op_Read_40M(SSI0_BASE, 0x2000, &readData[0], 4);
+	op_Read_40M(SSI0_BASE, 0x2000, readData, 4);
+
+	// test read starting 1 'later'
+	// to confirm it isn't smoke and mirrors
+	op_Read_40M(SSI0_BASE, 0x2001, readData, 4);
+
+	// test read security ID by reading factory-programmed region
+	uint32_t secID[8];
+	op_Read_SecID(SSI0_BASE, 0x0000, secID, 8);
 
 
 	return 0;

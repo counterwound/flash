@@ -41,6 +41,19 @@ int32_t op_RDCR(uint32_t spiBase, uint32_t* spiData)
     return 0;
 }
 
+int32_t op_Global_Blk_Unlock(uint32_t spiBase)
+{
+	op_WREN(spiBase);
+
+	uint32_t writeData[1];
+    writeData[0] = cmd_ULBPR;
+    spi_write_transact(spiBase, writeData, 1, csMode);
+
+    op_WRDI(spiBase);
+
+    return 0;
+}
+
 int32_t op_Reset(uint32_t spiBase)
 {
 	uint32_t writeData[1];
@@ -90,15 +103,48 @@ int32_t op_Chip_Erase(uint32_t spiBase)
 	return 0;
 }
 
+int32_t op_Read_SecID(uint32_t spiBase, uint16_t address, uint32_t* spiData, uint32_t byteCount)
+{
+	// from table 5-5 of flash programming manual
+	// user programmable range is 0x0008 to 0x07FF
+
+	// from section 4.3 of flash programming manual:
+	// The Security ID space is divided into two
+	// parts – one factory-programmed, 64-bit segment and
+	// one user-programmable segment. The factory-programmed
+	// segment is programmed during manufacturing with a
+	// unique number and cannot be changed.
+
+	uint32_t commandData[4];
+	commandData[0] = cmd_RSID;
+	commandData[1] = (0xFF00 & address) >> 8;
+	commandData[2] = (0xFF & address);
+
+	// todo: actually handle errors
+	spi_init(spiBase, csMode);
+	spi_start(spiBase, csMode);
+	// write command...
+	spi_write(spiBase, commandData, 4);
+	// ...clear buffer...
+	spi_read(spiBase, commandData, 4);
+	// ...then dummy cycles...
+	spi_write(spiBase, spiData, byteCount);
+	// ...and finally read
+	spi_read(spiBase, spiData, byteCount);
+	spi_stop(spiBase, csMode);
+
+	return 0;
+}
+
 int32_t op_Read_40M(uint32_t spiBase, uint32_t address, uint32_t* spiData, uint32_t byteCount)
 {
 	// from instruction 5.3 of flash programming manual
 	// command is (4 bytes): command, MSB addr..LSB addr
 	uint32_t commandData[4];
 	commandData[0] = cmd_Read_40M;
-	commandData[1] = (0xFF0000 & ((uint32_t)address)) >> 16;
-	commandData[2] = (0xFF00 & ((uint32_t)address)) >> 8;
-	commandData[3] = (0xFF & ((uint32_t)address));
+	commandData[1] = (0xFF0000 & address) >> 16;
+	commandData[2] = (0xFF00 & address) >> 8;
+	commandData[3] = (0xFF & address);
 
 	// todo: actually handle errors
 	spi_init(spiBase, csMode);
@@ -122,9 +168,9 @@ int32_t op_Page_Prog(uint32_t spiBase, uint32_t address, uint32_t* spiData, uint
 	// command is (4 bytes): command, MSB addr..LSB addr
 	uint32_t commandData[4];
 	commandData[0] = cmd_Page_Prog;
-	commandData[1] = (0xFF0000 & ((uint32_t)address)) >> 16;
-	commandData[2] = (0xFF00 & ((uint32_t)address)) >> 8;
-	commandData[3] = (0xFF & ((uint32_t)address));
+	commandData[1] = (0xFF0000 & address) >> 16;
+	commandData[2] = (0xFF00 & address) >> 8;
+	commandData[3] = (0xFF & address);
 
 	// write enable
 	op_WREN(spiBase);

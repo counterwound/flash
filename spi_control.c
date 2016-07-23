@@ -164,8 +164,7 @@ int32_t spi_write(uint32_t spiBase, uint32_t* spiData, uint32_t spiCount)
 
 	for(i = 0; i < spiCount; i++)
 	{
-		tempData = 0xFF & spiData[i];
-		SSIDataPut(spiBase, tempData);
+		SSIDataPut(spiBase, 0xFF & spiData[i]);
 	}
 
 	return 0;
